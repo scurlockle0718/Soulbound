@@ -1,5 +1,6 @@
 import { Package, Sword, Shield, Sparkles, Droplet, Flame, X, TrendingUp, Zap } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 type ItemType = 'weapon' | 'artifact' | 'material';
@@ -17,6 +18,10 @@ interface Item {
   element?: 'anemo' | 'geo' | 'electro' | 'pyro' | 'hydro';
 }
 
+interface ObjectsScreenProps {
+  items: Item[];
+}
+
 type FilterType = 'all' | ItemType;
 
 export function ObjectsScreen({ items }: ObjectsScreenProps) {
@@ -28,7 +33,7 @@ export function ObjectsScreen({ items }: ObjectsScreenProps) {
     : items.filter(item => item.type === filter);
 
   return (
-    <div className="h-full overflow-y-auto pb-20">
+    <div className="h-full overflow-y-auto pb-24">
       {/* Header */}
       <div className="p-5 bg-gradient-to-b from-[#2a2a4e] to-transparent">
         <div className="flex items-center gap-3 mb-2">
@@ -78,8 +83,9 @@ export function ObjectsScreen({ items }: ObjectsScreenProps) {
       </div>
 
       {/* Item Detail Modal */}
-      {selectedItem && (
-        <ItemDetail item={selectedItem} onClose={() => setSelectedItem(null)} />
+      {selectedItem && createPortal(
+        <ItemDetail item={selectedItem} onClose={() => setSelectedItem(null)} />,
+        document.body
       )}
     </div>
   );
@@ -224,8 +230,8 @@ function ItemDetail({ item, onClose }: { item: Item; onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-[412px] bg-[#16213e] rounded-t-3xl border-t border-white/10 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in p-4">
+      <div className="w-full max-w-[412px] bg-[#16213e] rounded-3xl border border-white/10 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom">
         {/* Header with Image */}
         <div className="relative">
           <div className="relative h-64 overflow-hidden">

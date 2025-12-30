@@ -220,9 +220,9 @@ export function QuestsScreen({
       {/* Epilogue */}
       {allQuestsCompleted && showCompletionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-[380px] bg-[#16213e] rounded-3xl border border-white/10 max-h-[50vh] overflow-y-auto animate-in slide-in-from-bottom mx-4">
+          <div className="w-full max-w-[380px] bg-[#16213e] rounded-3xl border border-white/10 animate-in slide-in-from-bottom mx-4 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-b from-[#16213e] to-[#16213e]/95 backdrop-blur-sm p-5 border-b border-white/10">
+            <div className="bg-gradient-to-b from-[#16213e] to-[#16213e]/95 backdrop-blur-sm p-5 border-b border-white/10 rounded-t-3xl">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span 
@@ -246,7 +246,7 @@ export function QuestsScreen({
             </div>
 
             {/* Content */}
-            <div className="p-5 space-y-4">
+            <div className="p-5 space-y-4 rounded-b-3xl">
               {/* Description */}
               <div>
                 <h3 className="text-[#e8e8e8] mb-2 flex items-center gap-2">

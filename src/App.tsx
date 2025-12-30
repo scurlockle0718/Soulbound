@@ -416,6 +416,7 @@ released to explore.`);
   // 🔥 AUTO-SAVE ALL USER PROGRESS TO CLOUD 🔥
   useEffect(() => {
     if (!isInitialized) return; // Don't save during initial load
+    if (appMode === 'admin') return; // Don't save user progress in admin mode - only save global templates
     
     const saveProgress = async () => {
       try {
@@ -434,7 +435,7 @@ released to explore.`);
     // Debounce to avoid too many API calls (save after 2 seconds of inactivity)
     const timeoutId = setTimeout(saveProgress, 2000);
     return () => clearTimeout(timeoutId);
-  }, [quests, inventory, mora, primogems, adventureExp, messages, prologueWatched, isInitialized]);
+  }, [quests, inventory, mora, primogems, adventureExp, messages, prologueWatched, isInitialized, appMode]);
 
   // Parse reward strings and add to inventory
   const addRewardsToInventory = (rewards: string[], rewardTypes?: ('currency' | 'weapon' | 'artifact' | 'material')[]) => {
