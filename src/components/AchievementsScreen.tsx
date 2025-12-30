@@ -32,14 +32,18 @@ interface Achievement {
 
 interface AchievementsScreenProps {
   quests: Quest[];
+  onRewatchEpilogue?: () => void;
+  onRewatchPrologue?: () => void;
+  username?: string;
 }
 
-export function AchievementsScreen({ quests }: AchievementsScreenProps) {
+export function AchievementsScreen({ quests, onRewatchEpilogue, onRewatchPrologue, username }: AchievementsScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState<'all' | Achievement['category']>('all');
 
   // Calculate stats
   const totalQuests = quests.length;
   const completedQuests = quests.filter(q => q.completed).length;
+  const allQuestsCompleted = completedQuests === totalQuests && totalQuests > 0;
   const totalRewardsEarned = quests
     .filter(q => q.completed)
     .reduce((acc, q) => acc + q.rewards.length, 0);
@@ -106,17 +110,6 @@ export function AchievementsScreen({ quests }: AchievementsScreenProps) {
     },
     {
       id: 6,
-      title: "Daily Dedication",
-      description: "Complete all commission quests",
-      icon: 'star',
-      progress: quests.filter(q => q.type === 'commission' && q.completed).length,
-      maxProgress: quests.filter(q => q.type === 'commission').length,
-      rewards: ["Primogems x40", "Mora x20,000"],
-      unlocked: quests.filter(q => q.type === 'commission').every(q => q.completed) && quests.filter(q => q.type === 'commission').length > 0,
-      category: 'quests'
-    },
-    {
-      id: 7,
       title: "Perfect Execution",
       description: "Complete a quest with 100% progress",
       icon: 'trophy',
@@ -139,17 +132,20 @@ export function AchievementsScreen({ quests }: AchievementsScreenProps) {
       {/* Header */}
       <div className="p-5 bg-gradient-to-b from-[#2a2a4e] to-transparent">
         <div className="flex items-center gap-3 mb-2">
-          <Trophy className="w-6 h-6 text-[#f5a623]" />
+          <Trophy className="w-6 h-6 text-[#e6be8a]" />
           <h2 className="text-[#e8e8e8]">Achievements</h2>
         </div>
-        <p className="text-[#a8a8b8] text-xs">Your journey through Teyvat</p>
+        {username && (
+          <p className="text-[#e6be8a] text-sm mb-1">{username}</p>
+        )}
+        <p className="text-[#a8a8b8] text-xs">Your journey through Lauriel</p>
       </div>
 
       {/* Stats Overview */}
       <div className="px-5 mb-6">
-        <div className="bg-gradient-to-br from-[#16213e] to-[#1a1a2e] rounded-2xl p-4 border border-[#f5a623]/20">
+        <div className="bg-gradient-to-br from-[#16213e] to-[#1a1a2e] rounded-2xl p-4 border border-[#e6be8a]/20">
           <h3 className="text-[#e8e8e8] mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#f5a623]" />
+            <TrendingUp className="w-4 h-4 text-[#e6be8a]" />
             Your Stats
           </h3>
           
@@ -202,6 +198,32 @@ export function AchievementsScreen({ quests }: AchievementsScreenProps) {
           </div>
         </div>
       </div>
+
+      {/* Rewatch Epilogue Button */}
+      {allQuestsCompleted && onRewatchEpilogue && (
+        <div className="px-5 mb-6">
+          <button
+            onClick={onRewatchEpilogue}
+            className="w-full bg-gradient-to-r from-[#f5a623] to-[#e09616] text-white py-3 rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          >
+            <Scroll className="w-5 h-5" />
+            <span>Rewatch Epilogue</span>
+          </button>
+        </div>
+      )}
+
+      {/* Rewatch Prologue Button */}
+      {onRewatchPrologue && (
+        <div className="px-5 mb-6">
+          <button
+            onClick={onRewatchPrologue}
+            className="w-full bg-gradient-to-r from-[#f5a623] to-[#e09616] text-white py-3 rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          >
+            <Scroll className="w-5 h-5" />
+            <span>Rewatch Prologue</span>
+          </button>
+        </div>
+      )}
 
       {/* Category Filter */}
       <div className="px-5 mb-6">
@@ -279,9 +301,9 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
 
   const getCategoryColor = () => {
     switch (achievement.category) {
-      case 'quests': return '#f5a623';
+      case 'quests': return '#e6be8a';
       case 'exploration': return '#4a90e2';
-      case 'combat': return '#ef4444';
+      case 'combat': return '#d4a574';
       case 'collection': return '#7b68ee';
     }
   };
@@ -290,7 +312,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     <div 
       className={`bg-[#16213e]/80 backdrop-blur-sm rounded-xl border p-4 transition-all ${
         achievement.unlocked 
-          ? 'border-[#f5a623]/30 shadow-lg shadow-[#f5a623]/10' 
+          ? 'border-[#e6be8a]/30 shadow-lg shadow-[#e6be8a]/10' 
           : 'border-white/5 opacity-60'
       }`}
     >
@@ -298,7 +320,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
         {/* Icon */}
         <div 
           className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-            achievement.unlocked ? 'bg-gradient-to-br from-[#f5a623] to-[#ef4444]' : 'bg-[#1a1a2e]/50'
+            achievement.unlocked ? 'bg-gradient-to-br from-[#e6be8a] to-[#d4a574]' : 'bg-[#1a1a2e]/50'
           }`}
           style={!achievement.unlocked ? { color: getCategoryColor() } : {}}
         >
@@ -312,8 +334,8 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
           <div className="flex items-start justify-between mb-1">
             <h3 className="text-[#e8e8e8] text-sm">{achievement.title}</h3>
             {achievement.unlocked && (
-              <div className="bg-[#f5a623]/20 px-2 py-0.5 rounded">
-                <Star className="w-3 h-3 text-[#f5a623] fill-[#f5a623]" />
+              <div className="bg-[#e6be8a]/20 px-2 py-0.5 rounded">
+                <Star className="w-3 h-3 text-[#e6be8a] fill-[#e6be8a]" />
               </div>
             )}
           </div>
@@ -344,7 +366,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
           <div 
             className={`h-full transition-all duration-300 ${
               achievement.unlocked 
-                ? 'bg-gradient-to-r from-[#f5a623] to-[#ef4444]'
+                ? 'bg-gradient-to-r from-[#e6be8a] to-[#d4a574]'
                 : 'bg-gradient-to-r from-[#4a90e2] to-[#7b68ee]'
             }`}
             style={{ width: `${(achievement.progress / achievement.maxProgress) * 100}%` }}
@@ -356,8 +378,8 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       {achievement.unlocked && (
         <div className="pt-3 border-t border-white/5">
           <div className="flex items-center gap-2 mb-2">
-            <Award className="w-3 h-3 text-[#f5a623]" />
-            <span className="text-[#f5a623] text-[10px] uppercase">Rewards</span>
+            <Award className="w-3 h-3 text-[#e6be8a]" />
+            <span className="text-[#e6be8a] text-[10px] uppercase">Rewards</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {achievement.rewards.map((reward, index) => (

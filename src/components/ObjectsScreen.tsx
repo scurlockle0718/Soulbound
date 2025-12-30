@@ -114,11 +114,12 @@ function FilterButton({
 function ItemCard({ item, onClick }: { item: Item; onClick: () => void }) {
   const getRarityColor = (rarity: ItemRarity) => {
     switch (rarity) {
-      case 5: return 'from-[#f5a623] to-[#d48806]';
+      case 5: return 'from-[#e6be8a] to-[#c9a05e]';
       case 4: return 'from-[#8b5cf6] to-[#7c3aed]';
       case 3: return 'from-[#4a90e2] to-[#3b82f6]';
       case 2: return 'from-[#4ade80] to-[#22c55e]';
-      case 1: return 'from-[#94a3b8] to-[#64748b]';
+      case 1: return 'from-[#6b7280] to-[#4b5563]';
+      default: return 'from-[#6b7280] to-[#4b5563]';
     }
   };
 
@@ -188,7 +189,7 @@ function ItemCard({ item, onClick }: { item: Item; onClick: () => void }) {
 function ItemDetail({ item, onClose }: { item: Item; onClose: () => void }) {
   const getRarityColor = (rarity: ItemRarity) => {
     switch (rarity) {
-      case 5: return '#f5a623';
+      case 5: return '#e6be8a';
       case 4: return '#8b5cf6';
       case 3: return '#4a90e2';
       case 2: return '#4ade80';
@@ -198,7 +199,7 @@ function ItemDetail({ item, onClose }: { item: Item; onClose: () => void }) {
 
   const getRarityGradient = (rarity: ItemRarity) => {
     switch (rarity) {
-      case 5: return 'from-[#f5a623] to-[#d48806]';
+      case 5: return 'from-[#e6be8a] to-[#c9a05e]';
       case 4: return 'from-[#8b5cf6] to-[#7c3aed]';
       case 3: return 'from-[#4a90e2] to-[#3b82f6]';
       case 2: return 'from-[#4ade80] to-[#22c55e]';

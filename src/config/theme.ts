@@ -47,7 +47,7 @@ export const theme = {
   // GRADIENTS
   gradients: {
     primary: 'from-[#4a90e2] to-[#7b68ee]',
-    gold: 'from-[#f5a623] to-[#ef4444]',
+    gold: 'from-[#e6be8a] to-[#d4a574]',
     purple: 'from-[#7b68ee] to-[#a855f7]',
     green: 'from-[#10b981] to-[#059669]',
   },

@@ -2,6 +2,7 @@ import { ArrowLeft, Plus, Trash2, Edit2, Save, Download, Upload, Image } from 'l
 import { useState, useRef } from 'react';
 import { OpeningCutscene } from './OpeningCutscene';
 import { EpilogueScreen } from './EpilogueScreen';
+import type { Message } from './MessagesScreen';
 
 interface QuestTask {
   id: number;
@@ -15,6 +16,7 @@ interface Quest {
   description: string;
   location: string;
   rewards: string[];
+  rewardTypes?: ('currency' | 'weapon' | 'artifact' | 'material')[];
   progress: number;
   difficulty: number;
   type: 'main' | 'side' | 'commission';
@@ -22,6 +24,8 @@ interface Quest {
   tasks: QuestTask[];
   subQuests?: number[];
   bonusRewards?: string[];
+  bonusRewardTypes?: ('currency' | 'weapon' | 'artifact' | 'material')[];
+  lore?: string;
 }
 
 interface Item {
@@ -45,12 +49,18 @@ interface AdminScreenProps {
   setPrologueText: React.Dispatch<React.SetStateAction<string>>;
   epilogueText: string;
   setEpilogueText: React.Dispatch<React.SetStateAction<string>>;
+  messages: Message[];
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  prologueMusicUrl: string;
+  setPrologueMusicUrl: React.Dispatch<React.SetStateAction<string>>;
+  epilogueMusicUrl: string;
+  setEpilogueMusicUrl: React.Dispatch<React.SetStateAction<string>>;
   onExit: () => void;
 }
 
-type AdminTab = 'quests' | 'inventory' | 'narratives';
+type AdminTab = 'quests' | 'inventory' | 'narratives' | 'messages';
 
-export function AdminScreen({ quests, setQuests, inventory, setInventory, prologueText, setPrologueText, epilogueText, setEpilogueText, onExit }: AdminScreenProps) {
+export function AdminScreen({ quests, setQuests, inventory, setInventory, prologueText, setPrologueText, epilogueText, setEpilogueText, messages, setMessages, prologueMusicUrl, setPrologueMusicUrl, epilogueMusicUrl, setEpilogueMusicUrl, onExit }: AdminScreenProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('quests');
 
   const handleExportData = () => {
@@ -58,7 +68,10 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
       quests,
       inventory,
       prologueText,
-      epilogueText
+      epilogueText,
+      messages,
+      prologueMusicUrl,
+      epilogueMusicUrl
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -83,6 +96,9 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
             if (data.inventory) setInventory(data.inventory);
             if (data.prologueText) setPrologueText(data.prologueText);
             if (data.epilogueText) setEpilogueText(data.epilogueText);
+            if (data.messages) setMessages(data.messages);
+            if (data.prologueMusicUrl) setPrologueMusicUrl(data.prologueMusicUrl);
+            if (data.epilogueMusicUrl) setEpilogueMusicUrl(data.epilogueMusicUrl);
             alert('Data imported successfully!');
           } catch (error) {
             alert('Error importing data. Please check the file format.');
@@ -97,7 +113,7 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
   return (
     <div className="w-full h-full bg-[#1a1a2e] flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#f5a623] to-[#ef4444] p-5 flex items-center justify-between">
+      <div className="bg-gradient-to-r from-[#e6be8a] to-[#d4a574] p-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={onExit}
@@ -106,8 +122,8 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
           <div>
-            <h2 className="text-white">Admin Mode</h2>
-            <p className="text-white/80 text-xs">Content Management</p>
+            <h2 className="text-[rgb(30,22,62)]">Admin Mode</h2>
+            <p className="text-xs text-[#1E163E]">Content Management</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -160,6 +176,16 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
         >
           Narratives
         </button>
+        <button
+          onClick={() => setActiveTab('messages')}
+          className={`flex-1 py-3 px-4 transition-colors ${
+            activeTab === 'messages'
+              ? 'text-[#4a90e2] border-b-2 border-[#4a90e2]'
+              : 'text-[#a8a8b8]'
+          }`}
+        >
+          Messages
+        </button>
       </div>
 
       {/* Content */}
@@ -171,7 +197,10 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
           <InventoryEditor inventory={inventory} setInventory={setInventory} />
         )}
         {activeTab === 'narratives' && (
-          <NarrativesEditor prologueText={prologueText} setPrologueText={setPrologueText} epilogueText={epilogueText} setEpilogueText={setEpilogueText} />
+          <NarrativesEditor prologueText={prologueText} setPrologueText={setPrologueText} epilogueText={epilogueText} setEpilogueText={setEpilogueText} prologueMusicUrl={prologueMusicUrl} setPrologueMusicUrl={setPrologueMusicUrl} epilogueMusicUrl={epilogueMusicUrl} setEpilogueMusicUrl={setEpilogueMusicUrl} />
+        )}
+        {activeTab === 'messages' && (
+          <MessagesEditor messages={messages} setMessages={setMessages} />
         )}
       </div>
     </div>
@@ -189,6 +218,7 @@ function QuestEditor({ quests, setQuests }: { quests: Quest[]; setQuests: React.
       description: "Quest description",
       location: "Location",
       rewards: ["Primogems x50"],
+      rewardTypes: ['currency'],
       progress: 0,
       difficulty: 3,
       type: 'side',
@@ -251,10 +281,10 @@ function QuestEditor({ quests, setQuests }: { quests: Quest[]; setQuests: React.
                   {quest.type}
                 </span>
                 <span className="text-[10px] bg-[#7b68ee]/20 text-[#7b68ee] px-2 py-1 rounded">
-                  {quest.tasks.length} tasks
+                  {(quest.tasks || []).length} tasks
                 </span>
                 <span className="text-[10px] bg-[#f5a623]/20 text-[#f5a623] px-2 py-1 rounded">
-                  {quest.rewards.length} rewards
+                  {(quest.rewards || []).length} rewards
                 </span>
                 {quest.subQuests && quest.subQuests.length > 0 && (
                   <span className="text-[10px] bg-[#ef4444]/20 text-[#ef4444] px-2 py-1 rounded">
@@ -299,51 +329,85 @@ function QuestForm({
 }) {
   const handleAddTask = () => {
     const newTask = {
-      id: Math.max(...quest.tasks.map(t => t.id), 0) + 1,
+      id: Math.max(...(quest.tasks || []).map(t => t.id), 0) + 1,
       description: "New task",
       completed: false
     };
-    setQuest({ ...quest, tasks: [...quest.tasks, newTask] });
+    setQuest({ ...quest, tasks: [...(quest.tasks || []), newTask] });
   };
 
   const handleRemoveTask = (taskId: number) => {
-    setQuest({ ...quest, tasks: quest.tasks.filter(t => t.id !== taskId) });
+    setQuest({ ...quest, tasks: (quest.tasks || []).filter(t => t.id !== taskId) });
   };
 
   const handleUpdateTask = (taskId: number, description: string) => {
     setQuest({
       ...quest,
-      tasks: quest.tasks.map(t => t.id === taskId ? { ...t, description } : t)
+      tasks: (quest.tasks || []).map(t => t.id === taskId ? { ...t, description } : t)
     });
   };
 
   const handleAddReward = () => {
-    setQuest({ ...quest, rewards: [...quest.rewards, "New Reward x1"] });
+    setQuest({ 
+      ...quest, 
+      rewards: [...(quest.rewards || []), "New Reward x1"],
+      rewardTypes: [...(quest.rewardTypes || []), 'currency']
+    });
   };
 
   const handleRemoveReward = (index: number) => {
-    setQuest({ ...quest, rewards: quest.rewards.filter((_, i) => i !== index) });
+    setQuest({ 
+      ...quest, 
+      rewards: (quest.rewards || []).filter((_, i) => i !== index),
+      rewardTypes: (quest.rewardTypes || []).filter((_, i) => i !== index)
+    });
   };
 
   const handleUpdateReward = (index: number, value: string) => {
     setQuest({
       ...quest,
-      rewards: quest.rewards.map((r, i) => i === index ? value : r)
+      rewards: (quest.rewards || []).map((r, i) => i === index ? value : r)
+    });
+  };
+
+  const handleUpdateRewardType = (index: number, type: 'currency' | 'weapon' | 'artifact' | 'material') => {
+    const newRewardTypes = [...(quest.rewardTypes || [])];
+    newRewardTypes[index] = type;
+    setQuest({
+      ...quest,
+      rewardTypes: newRewardTypes
     });
   };
 
   const handleAddBonusReward = () => {
-    setQuest({ ...quest, bonusRewards: [...(quest.bonusRewards || []), "Bonus Reward x1"] });
+    setQuest({ 
+      ...quest, 
+      bonusRewards: [...(quest.bonusRewards || []), "Bonus Reward x1"],
+      bonusRewardTypes: [...(quest.bonusRewardTypes || []), 'currency']
+    });
   };
 
   const handleRemoveBonusReward = (index: number) => {
-    setQuest({ ...quest, bonusRewards: quest.bonusRewards?.filter((_, i) => i !== index) });
+    setQuest({ 
+      ...quest, 
+      bonusRewards: quest.bonusRewards?.filter((_, i) => i !== index),
+      bonusRewardTypes: quest.bonusRewardTypes?.filter((_, i) => i !== index)
+    });
   };
 
   const handleUpdateBonusReward = (index: number, value: string) => {
     setQuest({
       ...quest,
       bonusRewards: quest.bonusRewards?.map((r, i) => i === index ? value : r)
+    });
+  };
+
+  const handleUpdateBonusRewardType = (index: number, type: 'currency' | 'weapon' | 'artifact' | 'material') => {
+    const newBonusRewardTypes = [...(quest.bonusRewardTypes || [])];
+    newBonusRewardTypes[index] = type;
+    setQuest({
+      ...quest,
+      bonusRewardTypes: newBonusRewardTypes
     });
   };
 
@@ -451,7 +515,7 @@ function QuestForm({
             </button>
           </div>
           <div className="space-y-2">
-            {quest.tasks.map((task, index) => (
+            {(quest.tasks || []).map((task, index) => (
               <div key={task.id} className="flex gap-2">
                 <input
                   type="text"
@@ -483,7 +547,7 @@ function QuestForm({
             </button>
           </div>
           <div className="space-y-2">
-            {quest.rewards.map((reward, index) => (
+            {(quest.rewards || []).map((reward, index) => (
               <div key={index} className="flex gap-2">
                 <input
                   type="text"
@@ -492,6 +556,16 @@ function QuestForm({
                   className="flex-1 bg-[#16213e] border border-white/10 rounded-lg p-2 text-[#e8e8e8] text-sm focus:outline-none focus:border-[#4a90e2]"
                   placeholder="Item Name x Amount"
                 />
+                <select
+                  value={(quest.rewardTypes || [])[index] || 'currency'}
+                  onChange={(e) => handleUpdateRewardType(index, e.target.value as 'currency' | 'weapon' | 'artifact' | 'material')}
+                  className="bg-[#16213e] border border-white/10 rounded-lg p-2 text-[#e8e8e8] text-sm focus:outline-none focus:border-[#4a90e2]"
+                >
+                  <option value="currency">Currency</option>
+                  <option value="weapon">Weapon</option>
+                  <option value="artifact">Artifact</option>
+                  <option value="material">Material</option>
+                </select>
                 <button
                   onClick={() => handleRemoveReward(index)}
                   className="w-8 h-8 rounded-lg bg-[#ef4444]/20 flex items-center justify-center hover:bg-[#ef4444]/30 transition-colors"
@@ -524,6 +598,16 @@ function QuestForm({
                   className="flex-1 bg-[#16213e] border border-white/10 rounded-lg p-2 text-[#e8e8e8] text-sm focus:outline-none focus:border-[#4a90e2]"
                   placeholder="Item Name x Amount"
                 />
+                <select
+                  value={quest.bonusRewardTypes?.[index] || 'currency'}
+                  onChange={(e) => handleUpdateBonusRewardType(index, e.target.value as 'currency' | 'weapon' | 'artifact' | 'material')}
+                  className="w-20 bg-[#16213e] border border-white/10 rounded-lg p-2 text-[#e8e8e8] text-sm focus:outline-none focus:border-[#4a90e2]"
+                >
+                  <option value="currency">Currency</option>
+                  <option value="weapon">Weapon</option>
+                  <option value="artifact">Artifact</option>
+                  <option value="material">Material</option>
+                </select>
                 <button
                   onClick={() => handleRemoveBonusReward(index)}
                   className="w-8 h-8 rounded-lg bg-[#ef4444]/20 flex items-center justify-center hover:bg-[#ef4444]/30 transition-colors"
@@ -818,15 +902,28 @@ function InventoryEditor({ inventory, setInventory }: { inventory: Item[]; setIn
   );
 }
 
-function NarrativesEditor({ prologueText, setPrologueText, epilogueText, setEpilogueText }: { prologueText: string; setPrologueText: React.Dispatch<React.SetStateAction<string>>; epilogueText: string; setEpilogueText: React.Dispatch<React.SetStateAction<string>> }) {
+function NarrativesEditor({ prologueText, setPrologueText, epilogueText, setEpilogueText, prologueMusicUrl, setPrologueMusicUrl, epilogueMusicUrl, setEpilogueMusicUrl }: { prologueText: string; setPrologueText: React.Dispatch<React.SetStateAction<string>>; epilogueText: string; setEpilogueText: React.Dispatch<React.SetStateAction<string>>; prologueMusicUrl: string; setPrologueMusicUrl: React.Dispatch<React.SetStateAction<string>>; epilogueMusicUrl: string; setEpilogueMusicUrl: React.Dispatch<React.SetStateAction<string>> }) {
   const [showProloguePreview, setShowProloguePreview] = useState(false);
   const [showEpiloguePreview, setShowEpiloguePreview] = useState(false);
+
+  const handleResetCutscene = () => {
+    if (confirm('This will reset the cutscene flag so the prologue plays again on next app load. Continue?')) {
+      localStorage.removeItem('soulbound_seen_cutscene');
+      alert('Cutscene flag cleared! The prologue will play on next app load.');
+    }
+  };
 
   return (
     <>
       <div className="p-5 space-y-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[#e8e8e8]">Edit Narratives</h3>
+          <button
+            onClick={handleResetCutscene}
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white text-xs hover:scale-[1.02] transition-transform"
+          >
+            Reset Cutscene Flag
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -856,7 +953,7 @@ function NarrativesEditor({ prologueText, setPrologueText, epilogueText, setEpil
               <label className="text-[#a8a8b8] text-xs">Epilogue Text</label>
               <button
                 onClick={() => setShowEpiloguePreview(true)}
-                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#f5a623] to-[#ef4444] text-white text-xs hover:scale-[1.02] transition-transform"
+                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#e6be8a] to-[#d4a574] text-white text-xs hover:scale-[1.02] transition-transform"
               >
                 Preview Epilogue
               </button>
@@ -871,6 +968,32 @@ function NarrativesEditor({ prologueText, setPrologueText, epilogueText, setEpil
               Tip: Use double line breaks (press Enter twice) to separate sections. Each section will appear on its own screen.
             </p>
           </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[#a8a8b8] text-xs">Prologue Music URL</label>
+            </div>
+            <input
+              type="text"
+              value={prologueMusicUrl}
+              onChange={(e) => setPrologueMusicUrl(e.target.value)}
+              className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2]"
+              placeholder="https://..."
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[#a8a8b8] text-xs">Epilogue Music URL</label>
+            </div>
+            <input
+              type="text"
+              value={epilogueMusicUrl}
+              onChange={(e) => setEpilogueMusicUrl(e.target.value)}
+              className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2]"
+              placeholder="https://..."
+            />
+          </div>
         </div>
       </div>
 
@@ -880,6 +1003,7 @@ function NarrativesEditor({ prologueText, setPrologueText, epilogueText, setEpil
           <OpeningCutscene 
             onComplete={() => setShowProloguePreview(false)}
             prologueText={prologueText}
+            prologueMusicUrl={prologueMusicUrl}
           />
         </div>
       )}
@@ -889,8 +1013,210 @@ function NarrativesEditor({ prologueText, setPrologueText, epilogueText, setEpil
         <EpilogueScreen
           onClose={() => setShowEpiloguePreview(false)}
           epilogueText={epilogueText}
+          epilogueMusicUrl={epilogueMusicUrl}
         />
       )}
     </>
+  );
+}
+
+function MessagesEditor({ messages, setMessages }: { messages: Message[]; setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleAddMessage = () => {
+    const now = new Date();
+    const formattedDate = now.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+    
+    const newMessage: Message = {
+      id: Math.max(...messages.map(m => m.id), 0) + 1,
+      title: "New Message",
+      content: "Message content goes here...",
+      sender: "System Admin",
+      timestamp: formattedDate,
+      read: false,
+      priority: 'normal'
+    };
+    setEditingMessage(newMessage);
+    setIsCreating(true);
+  };
+
+  const handleSaveMessage = () => {
+    if (!editingMessage) return;
+    
+    if (isCreating) {
+      setMessages(prev => [...prev, editingMessage]);
+      setIsCreating(false);
+    } else {
+      setMessages(prev => prev.map(m => m.id === editingMessage.id ? editingMessage : m));
+    }
+    setEditingMessage(null);
+  };
+
+  const handleDeleteMessage = (id: number) => {
+    if (confirm('Are you sure you want to delete this message?')) {
+      setMessages(prev => prev.filter(m => m.id !== id));
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingMessage(null);
+    setIsCreating(false);
+  };
+
+  if (editingMessage) {
+    return <MessageForm message={editingMessage} setMessage={setEditingMessage} onSave={handleSaveMessage} onCancel={handleCancel} />;
+  }
+
+  return (
+    <div className="p-5 space-y-3">
+      <button
+        onClick={handleAddMessage}
+        className="w-full bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] rounded-xl p-4 flex items-center justify-center gap-2 text-white hover:scale-[1.02] transition-transform"
+      >
+        <Plus className="w-5 h-5" />
+        Add New Message
+      </button>
+
+      {messages.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-[#a8a8b8]">No messages yet</p>
+          <p className="text-[#a8a8b8]/60 text-xs mt-2">Create a message to send to users</p>
+        </div>
+      )}
+
+      {messages.map(message => (
+        <div key={message.id} className="bg-[#16213e] rounded-xl p-4 border border-white/10">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-[#e8e8e8]">{message.title}</h3>
+                {!message.read && (
+                  <span className="w-2 h-2 bg-[#4a90e2] rounded-full" />
+                )}
+              </div>
+              <p className="text-[#a8a8b8] text-xs mb-2 line-clamp-2">{message.content}</p>
+              <div className="flex gap-2 flex-wrap">
+                <span className="text-[10px] bg-[#4a90e2]/20 text-[#4a90e2] px-2 py-1 rounded">
+                  From: {message.sender}
+                </span>
+                <span className="text-[10px] bg-[#7b68ee]/20 text-[#7b68ee] px-2 py-1 rounded">
+                  {message.timestamp}
+                </span>
+                <span className={`text-[10px] px-2 py-1 rounded ${
+                  message.priority === 'high' ? 'bg-[#ef4444]/20 text-[#ef4444]' :
+                  message.priority === 'normal' ? 'bg-[#f5a623]/20 text-[#f5a623]' :
+                  'bg-[#a8a8b8]/20 text-[#a8a8b8]'
+                }`}>
+                  {message.priority}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-2 ml-3">
+              <button
+                onClick={() => setEditingMessage(message)}
+                className="w-8 h-8 rounded-full bg-[#4a90e2]/20 flex items-center justify-center hover:bg-[#4a90e2]/30 transition-colors"
+              >
+                <Edit2 className="w-4 h-4 text-[#4a90e2]" />
+              </button>
+              <button
+                onClick={() => handleDeleteMessage(message.id)}
+                className="w-8 h-8 rounded-full bg-[#ef4444]/20 flex items-center justify-center hover:bg-[#ef4444]/30 transition-colors"
+              >
+                <Trash2 className="w-4 h-4 text-[#ef4444]" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MessageForm({ 
+  message, 
+  setMessage, 
+  onSave, 
+  onCancel
+}: { 
+  message: Message; 
+  setMessage: (message: Message) => void; 
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="p-5 space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-[#e8e8e8]">Edit Message</h3>
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg bg-[#16213e] text-[#a8a8b8] hover:bg-[#1a1a2e] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSave}
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] text-white hover:scale-[1.02] transition-transform flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            Save & Push to Users
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="text-[#a8a8b8] text-xs mb-1 block">Title</label>
+          <input
+            type="text"
+            value={message.title}
+            onChange={(e) => setMessage({ ...message, title: e.target.value })}
+            className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2]"
+            placeholder="Message title"
+          />
+        </div>
+
+        <div>
+          <label className="text-[#a8a8b8] text-xs mb-1 block">Sender Name</label>
+          <input
+            type="text"
+            value={message.sender}
+            onChange={(e) => setMessage({ ...message, sender: e.target.value })}
+            className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2]"
+            placeholder="System Admin, NPC Name, etc."
+          />
+        </div>
+
+        <div>
+          <label className="text-[#a8a8b8] text-xs mb-1 block">Content</label>
+          <textarea
+            value={message.content}
+            onChange={(e) => setMessage({ ...message, content: e.target.value })}
+            className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2] min-h-[120px]"
+            placeholder="Message content..."
+          />
+        </div>
+
+        <div>
+          <label className="text-[#a8a8b8] text-xs mb-1 block">Priority</label>
+          <select
+            value={message.priority}
+            onChange={(e) => setMessage({ ...message, priority: e.target.value as 'low' | 'normal' | 'high' })}
+            className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2]"
+          >
+            <option value="low">Low</option>
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div className="bg-[#4a90e2]/10 border border-[#4a90e2]/30 rounded-lg p-3">
+          <p className="text-[#4a90e2] text-xs">
+            💡 <strong>Tip:</strong> When you save this message, it will be pushed to all users' message centers as unread.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

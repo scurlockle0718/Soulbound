@@ -18,25 +18,25 @@ const bannersData: Banner[] = [
     id: 1,
     name: "Wanderlust Invocation",
     type: 'character',
-    featured5Star: "Diluc",
-    featured4Stars: ["Fischl", "Xiangling", "Barbara"],
+    featured5Star: "Molly",
+    featured4Stars: ["Carmen", "Oscar", "Nora"],
     endsIn: "12d 5h",
-    image: 'https://images.unsplash.com/photo-1697059172415-f1e08f9151bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbmltZSUyMGNoYXJhY3RlciUyMHBvcnRyYWl0fGVufDF8fHx8MTc2NTAxMjA3M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://i.imgur.com/ppTQQQp.png',
     color: '#ef4444'
   },
   {
     id: 2,
     name: "Epitome Invocation",
     type: 'weapon',
-    featured5Star: "Wolf's Gravestone",
-    featured4Stars: ["The Flute", "Sacrificial Bow", "Dragon's Bane"],
+    featured5Star: "Mo the Monster",
+    featured4Stars: ["Badge of the Chosen", "Pocket Token", "Threadbound Atlas"],
     endsIn: "12d 5h",
-    image: 'https://images.unsplash.com/photo-1757083840090-17a7bfca08c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpZXZhbCUyMHN3b3JkJTIwd2VhcG9ufGVufDF8fHx8MTc2NTA1MzA1M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://i.imgur.com/tNgiTxs.png',
     color: '#8b5cf6'
   }
 ];
 
-export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void }) {
+export function BannerScreen({ onWish, primogems }: { onWish: (type: '1' | '10') => void; primogems: number }) {
   const [activeBanner, setActiveBanner] = useState(0);
   const currentBanner = bannersData[activeBanner];
 
@@ -45,7 +45,7 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
       {/* Header */}
       <div className="p-5 bg-gradient-to-b from-[#2a2a4e] to-transparent">
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="w-6 h-6 text-[#f5a623]" />
+          <Sparkles className="w-6 h-6 text-[#e6be8a]" />
           <h2 className="text-[#e8e8e8]">Wish</h2>
         </div>
         <p className="text-[#a8a8b8] text-xs">May the blessings of the Anemo Archon bring you fortune</p>
@@ -93,7 +93,7 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-[#f5a623] text-[#1a1a2e] text-[10px] px-2 py-1 rounded uppercase">
+                    <span className="bg-[#e6be8a] text-[#1a1a2e] text-[10px] px-2 py-1 rounded uppercase">
                       Featured
                     </span>
                     <span className="bg-[#1a1a2e]/80 backdrop-blur-sm text-[#e8e8e8] text-[10px] px-2 py-1 rounded">
@@ -103,7 +103,7 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
                   <h3 className="text-white drop-shadow-lg">{currentBanner.featured5Star}</h3>
                   <div className="flex items-center gap-1 mt-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 text-[#f5a623] fill-[#f5a623]" />
+                      <Star key={i} className="w-3 h-3 text-[#e6be8a] fill-[#e6be8a]" />
                     ))}
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
 
             {/* Time Remaining */}
             <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-[#1a1a2e]/80 backdrop-blur-sm px-3 py-2 rounded-lg">
-              <Clock className="w-4 h-4 text-[#f5a623]" />
+              <Clock className="w-4 h-4 text-[#e6be8a]" />
               <span className="text-[#e8e8e8] text-xs">Ends in {currentBanner.endsIn}</span>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
       {/* Featured Characters/Items */}
       <div className="px-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Star className="w-4 h-4 text-[#f5a623]" />
+          <Star className="w-4 h-4 text-[#e6be8a]" />
           <h3 className="text-[#e8e8e8]">Featured 4-Star Items</h3>
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -157,7 +157,7 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
               <div className="text-[#a8a8b8] text-[10px]">Pity Counter</div>
             </div>
             <div className="text-center border-l border-r border-white/5">
-              <div className="text-[#f5a623] text-xl mb-1">1280</div>
+              <div className="text-[#f5a623] text-xl mb-1">{primogems.toLocaleString()}</div>
               <div className="text-[#a8a8b8] text-[10px]">Primogems</div>
             </div>
             <div className="text-center">
@@ -189,15 +189,15 @@ export function BannerScreen({ onWish }: { onWish: (type: '1' | '10') => void })
 
           <button 
             onClick={() => onWish('10')}
-            className="w-full bg-gradient-to-r from-[#f5a623] to-[#ef4444] rounded-xl p-4 flex items-center justify-between group hover:scale-[1.02] transition-transform"
+            className="w-full bg-gradient-to-r from-[#e6be8a] to-[#d4a574] rounded-xl p-4 flex items-center justify-between group hover:scale-[1.02] transition-transform text-[rgb(23,22,62)]"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="text-left">
-                <div className="text-white">Wish ×10</div>
-                <div className="text-white/80 text-xs">1600 Primogems</div>
+                <div className="text-[rgb(30,22,62)]">Wish ×10</div>
+                <div className="text-white/80 text-xs text-[rgba(30,22,62,0.8)]">1600 Primogems</div>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />

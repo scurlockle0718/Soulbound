@@ -1,14 +1,17 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Volume2, VolumeX } from 'lucide-react';
 
 interface EpilogueScreenProps {
   onClose: () => void;
   epilogueText?: string;
+  epilogueMusicUrl?: string;
 }
 
-export function EpilogueScreen({ onClose, epilogueText }: EpilogueScreenProps) {
+export function EpilogueScreen({ onClose, epilogueText, epilogueMusicUrl }: EpilogueScreenProps) {
   const [currentPhase, setCurrentPhase] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Default epilogue if none provided
   const defaultEpilogue = `EPILOGUE: SOULBOUND
@@ -72,8 +75,24 @@ released to explore.`;
   const handleClick = () => {
     if (currentPhase < sections.length - 1) {
       setCurrentPhase(currentPhase + 1);
+    } else if (currentPhase === sections.length - 1) {
+      // Move to completion screen
+      setCurrentPhase(sections.length);
     }
   };
+
+  const handleMuteToggle = () => {
+    setIsMuted(!isMuted);
+    if (iframeRef.current) {
+      iframeRef.current.muted = !isMuted;
+    }
+  };
+
+  useEffect(() => {
+    if (iframeRef.current) {
+      iframeRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   return (
     <div 
@@ -127,11 +146,24 @@ released to explore.`;
           Tap to continue
         </motion.div>
       )}
+      
+      {/* Tap to finish hint */}
+      {currentPhase === sections.length - 1 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-0 right-0 text-center text-white/50 text-sm pointer-events-none"
+        >
+          Tap to finish
+        </motion.div>
+      )}
 
       {/* Content - Scrollable */}
       <div className="relative z-10 w-full max-w-[380px] px-8 h-full flex items-center justify-center overflow-y-auto">
         <div className="py-20">
           <AnimatePresence mode="wait">
+            {/* Show epilogue sections */}
             {sections.map((section, index) => (
               currentPhase === index && (
                 <motion.div
@@ -143,7 +175,7 @@ released to explore.`;
                   className="text-center"
                 >
                   {section.includes('EPILOGUE') || section.includes('SOULBOUND') ? (
-                    <h2 className="text-[#f5a623] text-2xl tracking-widest mb-4 whitespace-pre-wrap">
+                    <h2 className="text-[#f5a623] text-2xl tracking-widest mb-4 whitespace-pre-wrap" style={{ fontFamily: 'serif' }}>
                       {section}
                     </h2>
                   ) : (
@@ -154,9 +186,56 @@ released to explore.`;
                 </motion.div>
               )
             ))}
+            
+            {/* Completion screen */}
+            {currentPhase === sections.length && (
+              <motion.div
+                key="completion"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 1 }}
+                className="text-center space-y-8"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <h2 className="text-[#f5a623] text-3xl tracking-widest mb-4" style={{ fontFamily: 'serif' }}>
+                    THE END
+                  </h2>
+                </motion.div>
+                
+                <div className="w-32 h-px bg-gradient-to-r from-transparent via-[#f5a623] to-transparent mx-auto" />
+                
+                <p className="text-[#e8e8e8]/70 text-sm">
+                  Click the X to return
+                </p>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Music player */}
+      {epilogueMusicUrl && (
+        <div className="absolute bottom-8 left-8 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50">
+          <iframe
+            ref={iframeRef}
+            src={epilogueMusicUrl}
+            width="0"
+            height="0"
+            style={{ display: 'none' }}
+            allow="autoplay"
+          />
+          <button
+            onClick={handleMuteToggle}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50"
+          >
+            {isMuted ? <VolumeX className="w-5 h-5 text-white/80" /> : <Volume2 className="w-5 h-5 text-white/80" />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
