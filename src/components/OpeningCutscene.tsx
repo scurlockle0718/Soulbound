@@ -57,7 +57,7 @@ Let the journey begin.`;
 
   return (
     <div 
-      className="w-full h-full bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer"
+      className="min-h-screen w-full z-[100] bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer p-4"
       onClick={handleClick}
     >
       {/* Animated stars background */}
@@ -91,9 +91,9 @@ Let the journey begin.`;
           e.stopPropagation();
           handleSkip();
         }}
-        className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50"
+        className="absolute top-4 right-4 sm:top-8 sm:right-8 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50"
       >
-        <span className="text-white/80 text-sm">Skip</span>
+        <span className="text-white/80 text-xs sm:text-sm">Skip</span>
         <SkipForward className="w-4 h-4 text-white/80" />
       </motion.button>
 
@@ -102,13 +102,13 @@ Let the journey begin.`;
         initial={{ opacity: 0 }}
         animate={{ opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 2, repeat: Infinity }}
-        className="absolute bottom-8 left-0 right-0 text-center text-white/50 text-sm pointer-events-none"
+        className="absolute bottom-4 sm:bottom-8 left-0 right-0 text-center text-white/50 text-xs sm:text-sm pointer-events-none"
       >
         Tap to continue
       </motion.div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-[380px] px-8 text-center space-y-8">
+      <div className="relative z-10 w-full max-w-2xl px-4 sm:px-8 text-center space-y-6 sm:space-y-8">
         {/* Title - always shows first */}
         <AnimatePresence mode="wait">
           {currentPhase >= 0 && (
@@ -119,16 +119,16 @@ Let the journey begin.`;
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 1 }}
             >
-              <h1 className="text-[#e6be8a] text-5xl tracking-wider mb-2" style={{ fontFamily: 'serif' }}>
+              <h1 className="text-[#e6be8a] text-4xl sm:text-5xl tracking-wider mb-2" style={{ fontFamily: 'serif' }}>
                 Soulbound
               </h1>
-              <div className="w-32 h-px bg-gradient-to-r from-transparent via-[#e6be8a] to-transparent mx-auto" />
+              <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-[#e6be8a] to-transparent mx-auto" />
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Prologue sections */}
-        <div className="min-h-[300px] flex items-center justify-center">
+        <div className="min-h-[200px] sm:min-h-[300px] flex items-center justify-center">
           <AnimatePresence mode="wait">
             {sections.map((section, index) => (
               currentPhase === index + 1 && (
@@ -138,9 +138,9 @@ Let the journey begin.`;
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.8 }}
-                  className={`text-[#e8e8e8] leading-relaxed whitespace-pre-wrap ${
+                  className={`text-[#e8e8e8] text-sm sm:text-base leading-relaxed whitespace-pre-wrap ${
                     section.includes('Let the journey begin') || section.includes('remembrance') 
-                      ? 'italic text-lg' 
+                      ? 'italic text-base sm:text-lg' 
                       : ''
                   }`}
                 >
@@ -154,7 +154,7 @@ Let the journey begin.`;
 
       {/* Music player */}
       {prologueMusicUrl && (
-        <div className="absolute bottom-8 left-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50">
+        <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50">
           <iframe
             ref={iframeRef}
             src={prologueMusicUrl}

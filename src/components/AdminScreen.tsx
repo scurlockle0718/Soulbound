@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { OpeningCutscene } from './OpeningCutscene';
 import { EpilogueScreen } from './EpilogueScreen';
 import type { Message } from './MessagesScreen';
+import * as api from '../utils/api';
 
 interface QuestTask {
   id: number;
@@ -62,6 +63,33 @@ type AdminTab = 'quests' | 'inventory' | 'narratives' | 'messages';
 
 export function AdminScreen({ quests, setQuests, inventory, setInventory, prologueText, setPrologueText, epilogueText, setEpilogueText, messages, setMessages, prologueMusicUrl, setPrologueMusicUrl, epilogueMusicUrl, setEpilogueMusicUrl, onExit }: AdminScreenProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('quests');
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string>('');
+
+  const handleManualSave = async () => {
+    setIsSaving(true);
+    try {
+      console.log('💾 Manually saving all global templates...');
+      console.log('  - Quests:', quests.length);
+      console.log('  - Inventory:', inventory.length);
+      
+      await Promise.all([
+        api.saveGlobalQuests(quests),
+        api.saveGlobalInventory(inventory),
+        api.saveNarratives(prologueText, epilogueText)
+      ]);
+      
+      const now = new Date().toLocaleTimeString();
+      setLastSaved(now);
+      console.log('✅ All global templates saved successfully!');
+      alert(`✅ All changes saved successfully!\n\n${quests.length} quests, ${inventory.length} items, and narratives are now live for all users.`);
+    } catch (error) {
+      console.error('❌ Failed to save global templates:', error);
+      alert('❌ Failed to save changes. Please check the console for details.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleExportData = () => {
     const data = {
@@ -201,6 +229,25 @@ export function AdminScreen({ quests, setQuests, inventory, setInventory, prolog
         )}
         {activeTab === 'messages' && (
           <MessagesEditor messages={messages} setMessages={setMessages} />
+        )}
+      </div>
+
+      {/* Save Button */}
+      <div className="p-5 bg-[#16213e] border-t border-white/10">
+        <button
+          onClick={handleManualSave}
+          className={`w-full bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] rounded-xl p-4 flex items-center justify-center gap-2 text-white hover:scale-[1.02] transition-transform ${
+            isSaving ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={isSaving}
+        >
+          <Save className="w-5 h-5" />
+          {isSaving ? 'Saving...' : 'Save All Changes'}
+        </button>
+        {lastSaved && (
+          <p className="text-[#a8a8b8] text-xs mt-2 text-center">
+            Last saved: {lastSaved}
+          </p>
         )}
       </div>
     </div>
@@ -453,6 +500,16 @@ function QuestForm({
             value={quest.description}
             onChange={(e) => setQuest({ ...quest, description: e.target.value })}
             className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2] min-h-[80px]"
+          />
+        </div>
+
+        <div>
+          <label className="text-[#a8a8b8] text-xs mb-1 block">Lore (Background Story)</label>
+          <textarea
+            value={quest.lore || ''}
+            onChange={(e) => setQuest({ ...quest, lore: e.target.value })}
+            className="w-full bg-[#16213e] border border-white/10 rounded-lg p-3 text-[#e8e8e8] focus:outline-none focus:border-[#4a90e2] min-h-[120px]"
+            placeholder="Enter the deep lore and background story for this quest..."
           />
         </div>
 

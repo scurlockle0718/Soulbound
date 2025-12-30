@@ -64,6 +64,9 @@ export function QuestsScreen({
   useEffect(() => {
     if (allQuestsCompleted) {
       setShowCompletionModal(true);
+      // Close the detail modal if it's open
+      setSelectedQuest(null);
+      setIsTracking(false);
     }
   }, [allQuestsCompleted]);
 
@@ -103,72 +106,72 @@ export function QuestsScreen({
   return (
     <div className="h-full overflow-y-auto pb-20">
       {/* Header */}
-      <div className="p-5 bg-gradient-to-b from-[#2a2a4e] to-transparent">
-        <div className="flex items-center gap-3 mb-2">
+      <div className="p-4 sm:p-5 bg-gradient-to-b from-[#2a2a4e] to-transparent safe-top">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2">
           <button
             onClick={onBackToSelection}
-            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
           >
-            <ArrowLeft className="w-5 h-5 text-white" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
           <button
             onClick={onLogout}
-            className="w-10 h-10 rounded-full bg-[#4a90e2] flex items-center justify-center hover:bg-[#3a79c0] transition-colors flex-shrink-0"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#4a90e2] flex items-center justify-center hover:bg-[#3a79c0] transition-colors flex-shrink-0"
             title="Sign Out"
           >
-            <LogOut className="w-5 h-5 text-white" />
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
-          <Scroll className="w-6 h-6 text-[#e6be8a]" />
+          <Scroll className="w-5 h-5 sm:w-6 sm:h-6 text-[#e6be8a]" />
           <h2 className="text-[#e8e8e8]">Quest Log</h2>
           <button
             onClick={onResetQuests}
             className="ml-auto w-8 h-8 rounded-full bg-gradient-to-br from-[#ef4444] to-[#dc2626] hover:from-[#dc2626] hover:to-[#b91c1c] flex items-center justify-center transition-all hover:scale-110 shadow-lg shadow-red-500/30"
             title="Factory Reset (Danger Zone)"
           >
-            <RotateCcw className="w-4 h-4 text-white" />
+            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
           </button>
         </div>
         <p className="text-[#a8a8b8] text-xs">Track your adventures across Teyvat</p>
       </div>
 
       {/* Player Stats */}
-      <div className="px-5 mb-6">
-        <div className="bg-gradient-to-br from-[#16213e] to-[#1a1a2e] rounded-2xl p-4 border border-[#e6be8a]/20">
+      <div className="px-4 sm:px-5 mb-6">
+        <div className="bg-gradient-to-br from-[#16213e] to-[#1a1a2e] rounded-2xl p-3 sm:p-4 border border-[#e6be8a]/20">
           <h3 className="text-[#e8e8e8] mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-[#e6be8a]" />
             Traveler Stats
           </h3>
           
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-[#1a1a2e]/50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Star className="w-4 h-4 text-[#4a90e2]" />
-                <span className="text-[#a8a8b8] text-xs">Adv. EXP</span>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="bg-[#1a1a2e]/50 rounded-lg p-2 sm:p-3">
+              <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                <Star className="w-3 h-3 sm:w-4 sm:h-4 text-[#4a90e2]" />
+                <span className="text-[#a8a8b8] text-[10px] sm:text-xs">Adv. EXP</span>
               </div>
-              <div className="text-[#e8e8e8]">{adventureExp.toLocaleString()}</div>
+              <div className="text-[#e8e8e8] text-sm sm:text-base">{adventureExp.toLocaleString()}</div>
             </div>
 
-            <div className="bg-[#1a1a2e]/50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-[#7b68ee]" />
-                <span className="text-[#a8a8b8] text-xs">Primogems</span>
+            <div className="bg-[#1a1a2e]/50 rounded-lg p-2 sm:p-3">
+              <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-[#7b68ee]" />
+                <span className="text-[#a8a8b8] text-[10px] sm:text-xs">Primogems</span>
               </div>
-              <div className="text-[#e8e8e8]">{primogems.toLocaleString()}</div>
+              <div className="text-[#e8e8e8] text-sm sm:text-base">{primogems.toLocaleString()}</div>
             </div>
 
-            <div className="bg-[#1a1a2e]/50 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Coins className="w-4 h-4 text-[#f5a623]" />
-                <span className="text-[#a8a8b8] text-xs">Mora</span>
+            <div className="bg-[#1a1a2e]/50 rounded-lg p-2 sm:p-3">
+              <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                <Coins className="w-3 h-3 sm:w-4 sm:h-4 text-[#f5a623]" />
+                <span className="text-[#a8a8b8] text-[10px] sm:text-xs">Mora</span>
               </div>
-              <div className="text-[#e8e8e8]">{mora.toLocaleString()}</div>
+              <div className="text-[#e8e8e8] text-sm sm:text-base">{mora.toLocaleString()}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Active Quests */}
-      <div className="px-5 mb-6">
+      <div className="px-4 sm:px-5 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Target className="w-4 h-4 text-[#4a90e2]" />
           <h3 className="text-[#e8e8e8]">Active Quests</h3>
@@ -186,7 +189,7 @@ export function QuestsScreen({
 
       {/* Completed Quests */}
       {completedQuests.length > 0 && (
-        <div className="px-5">
+        <div className="px-4 sm:px-5">
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-4 h-4 text-[#e6be8a]" />
             <h3 className="text-[#e8e8e8]">Completed</h3>
@@ -381,8 +384,8 @@ function QuestDetail({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-[412px] bg-[#16213e] rounded-t-3xl border-t border-white/10 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in pb-20">
+      <div className="w-full max-w-[412px] bg-[#16213e] rounded-t-3xl border-t border-white/10 max-h-[calc(85vh-5rem)] overflow-y-auto animate-in slide-in-from-bottom">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-b from-[#16213e] to-[#16213e]/95 backdrop-blur-sm p-5 border-b border-white/10 z-10">
           <div className="flex items-start justify-between mb-3">
@@ -434,7 +437,7 @@ function QuestDetail({
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-6">
+        <div className="p-5 space-y-6 pb-24">
           {/* Description */}
           <div>
             <h3 className="text-[#e8e8e8] mb-2 flex items-center gap-2">

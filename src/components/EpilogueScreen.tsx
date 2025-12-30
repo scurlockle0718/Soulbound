@@ -96,7 +96,7 @@ released to explore.`;
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[100] bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center overflow-hidden p-4"
       onClick={handleClick}
     >
       {/* Animated stars background */}
@@ -130,7 +130,7 @@ released to explore.`;
           e.stopPropagation();
           onClose();
         }}
-        className="absolute top-8 right-8 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50"
+        className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50"
       >
         <X className="w-5 h-5 text-white/80" />
       </motion.button>
@@ -141,7 +141,7 @@ released to explore.`;
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-0 right-0 text-center text-white/50 text-sm pointer-events-none"
+          className="absolute bottom-4 sm:bottom-8 left-0 right-0 text-center text-white/50 text-xs sm:text-sm pointer-events-none"
         >
           Tap to continue
         </motion.div>
@@ -153,15 +153,15 @@ released to explore.`;
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-0 right-0 text-center text-white/50 text-sm pointer-events-none"
+          className="absolute bottom-4 sm:bottom-8 left-0 right-0 text-center text-white/50 text-xs sm:text-sm pointer-events-none"
         >
           Tap to finish
         </motion.div>
       )}
 
       {/* Content - Scrollable */}
-      <div className="relative z-10 w-full max-w-[380px] px-8 h-full flex items-center justify-center overflow-y-auto">
-        <div className="py-20">
+      <div className="relative z-10 w-full max-w-2xl px-4 sm:px-8 h-full flex items-center justify-center overflow-y-auto">
+        <div className="py-16 sm:py-20">
           <AnimatePresence mode="wait">
             {/* Show epilogue sections */}
             {sections.map((section, index) => (
@@ -175,11 +175,11 @@ released to explore.`;
                   className="text-center"
                 >
                   {section.includes('EPILOGUE') || section.includes('SOULBOUND') ? (
-                    <h2 className="text-[#f5a623] text-2xl tracking-widest mb-4 whitespace-pre-wrap" style={{ fontFamily: 'serif' }}>
+                    <h2 className="text-[#f5a623] text-xl sm:text-2xl tracking-widest mb-4 whitespace-pre-wrap" style={{ fontFamily: 'serif' }}>
                       {section}
                     </h2>
                   ) : (
-                    <p className="text-[#e8e8e8] leading-relaxed whitespace-pre-wrap">
+                    <p className="text-[#e8e8e8] text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                       {section}
                     </p>
                   )}
@@ -201,14 +201,14 @@ released to explore.`;
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <h2 className="text-[#f5a623] text-3xl tracking-widest mb-4" style={{ fontFamily: 'serif' }}>
+                  <h2 className="text-[#f5a623] text-2xl sm:text-3xl tracking-widest mb-4" style={{ fontFamily: 'serif' }}>
                     THE END
                   </h2>
                 </motion.div>
                 
-                <div className="w-32 h-px bg-gradient-to-r from-transparent via-[#f5a623] to-transparent mx-auto" />
+                <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-[#f5a623] to-transparent mx-auto" />
                 
-                <p className="text-[#e8e8e8]/70 text-sm">
+                <p className="text-[#e8e8e8]/70 text-xs sm:text-sm">
                   Click the X to return
                 </p>
               </motion.div>
@@ -219,7 +219,7 @@ released to explore.`;
 
       {/* Music player */}
       {epilogueMusicUrl && (
-        <div className="absolute bottom-8 left-8 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50">
+        <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50">
           <iframe
             ref={iframeRef}
             src={epilogueMusicUrl}

@@ -286,8 +286,12 @@ released to explore.`);
         }
         
         // Use global quest templates if available, otherwise use initial data
-        const questTemplates = globalConfig.questTemplates || initialQuestsData;
-        const inventoryTemplates = globalConfig.inventoryTemplates || initialInventoryData;
+        const questTemplates = (globalConfig.questTemplates && Array.isArray(globalConfig.questTemplates) && globalConfig.questTemplates.length > 0) 
+          ? globalConfig.questTemplates 
+          : initialQuestsData;
+        const inventoryTemplates = (globalConfig.inventoryTemplates && Array.isArray(globalConfig.inventoryTemplates) && globalConfig.inventoryTemplates.length > 0)
+          ? globalConfig.inventoryTemplates
+          : initialInventoryData;
         
         console.log('📊 Quest templates to use:', questTemplates);
         console.log('📊 Inventory templates to use:', inventoryTemplates);
@@ -335,15 +339,25 @@ released to explore.`);
         
         setIsInitialized(true);
         
-        // Check prologue status from CLOUD DATA (not localStorage)
-        // This ensures new accounts always see the prologue
+        // Check prologue status - prioritize localStorage for refresh persistence
+        const localStoragePrologueWatched = localStorage.getItem('soulbound_seen_cutscene') === 'true';
         const cloudPrologueWatched = userData.flags?.prologueWatched || false;
-        console.log('Initialization: cloudPrologueWatched =', cloudPrologueWatched);
         
-        if (cloudPrologueWatched) {
+        // Use localStorage if it exists (user has been active), otherwise use cloud data
+        const hasWatchedPrologue = localStoragePrologueWatched || cloudPrologueWatched;
+        console.log('Initialization: hasWatchedPrologue =', hasWatchedPrologue);
+        
+        if (hasWatchedPrologue) {
           setPrologueWatched(true);
           localStorage.setItem('soulbound_seen_cutscene', 'true');
-          setAppMode('selection');
+          
+          // Check if user was on public app before refresh
+          const lastAppMode = localStorage.getItem('soulbound_app_mode');
+          if (lastAppMode === 'public') {
+            setAppMode('public');
+          } else {
+            setAppMode('selection');
+          }
         } else {
           // New user or hasn't watched prologue yet
           setPrologueWatched(false);
@@ -484,7 +498,7 @@ released to explore.`);
         newItems.forEach(newItem => {
           // Check if item already exists in inventory
           const existingItemIndex = updatedInventory.findIndex(
-            item => item.name.toLowerCase() === newItem.name.toLowerCase()
+            item => item?.name?.toLowerCase() === newItem?.name?.toLowerCase()
           );
 
           if (existingItemIndex !== -1) {
@@ -610,10 +624,49 @@ released to explore.`);
 
   const handleSelectMode = (mode: 'public' | 'admin') => {
     setAppMode(mode);
+    // Store the mode so we can restore it on refresh
+    if (mode === 'public') {
+      localStorage.setItem('soulbound_app_mode', 'public');
+    } else {
+      localStorage.removeItem('soulbound_app_mode');
+      // When entering admin mode, load global templates
+      loadGlobalTemplates();
+    }
+  };
+
+  const loadGlobalTemplates = async () => {
+    try {
+      console.log('🔧 Loading global templates for admin mode...');
+      const globalConfig = await api.fetchGlobalConfig();
+      
+      // Load global quest templates
+      if (globalConfig.questTemplates && Array.isArray(globalConfig.questTemplates) && globalConfig.questTemplates.length > 0) {
+        console.log('✅ Loaded global quest templates:', globalConfig.questTemplates.length, 'quests');
+        setQuests(globalConfig.questTemplates);
+      } else {
+        console.log('📋 No global quest templates found, using initial data');
+        setQuests(initialQuestsData);
+      }
+      
+      // Load global inventory templates
+      if (globalConfig.inventoryTemplates && Array.isArray(globalConfig.inventoryTemplates) && globalConfig.inventoryTemplates.length > 0) {
+        console.log('✅ Loaded global inventory templates:', globalConfig.inventoryTemplates.length, 'items');
+        setInventory(globalConfig.inventoryTemplates);
+      } else {
+        console.log('📦 No global inventory templates found, using initial data');
+        setInventory(initialInventoryData);
+      }
+    } catch (error) {
+      console.error('Failed to load global templates:', error);
+      // Fallback to initial data
+      setQuests(initialQuestsData);
+      setInventory(initialInventoryData);
+    }
   };
 
   const handleExitAdmin = () => {
     setAppMode('selection');
+    localStorage.removeItem('soulbound_app_mode');
   };
 
   const handleLogout = () => {
@@ -637,7 +690,7 @@ released to explore.`);
   // Show loading screen
   if (appMode === 'loading') {
     return (
-      <div className="w-full max-w-[412px] mx-auto h-screen bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center">
+      <div className="w-full min-h-screen bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 border-4 border-[#4a90e2]/30 border-t-[#4a90e2] rounded-full animate-spin" />
           <p className="text-white/60">Loading your journey...</p>
@@ -649,7 +702,7 @@ released to explore.`);
   // Show auth screen
   if (appMode === 'auth') {
     return (
-      <div className="w-full max-w-[412px] mx-auto h-screen">
+      <div className="w-full min-h-screen">
         <AuthScreen onAuthSuccess={(user) => {
           console.log('User authenticated:', user);
           // Re-initialize to load user data
@@ -662,7 +715,7 @@ released to explore.`);
   // Show opening cutscene
   if (appMode === 'cutscene') {
     return (
-      <div className="w-full max-w-[412px] mx-auto h-screen">
+      <div className="w-full min-h-screen">
         <OpeningCutscene 
           onComplete={() => {
             setPrologueWatched(true);
@@ -679,7 +732,7 @@ released to explore.`);
   if (appMode === 'selection') {
     const currentUser = api.getCurrentUser();
     return (
-      <div className="w-full max-w-[412px] mx-auto h-screen">
+      <div className="w-full min-h-screen">
         <SelectionScreen 
           onSelectMode={handleSelectMode}
           userEmail={currentUser?.email}
@@ -691,7 +744,7 @@ released to explore.`);
   // Show admin screen
   if (appMode === 'admin') {
     return (
-      <div className="w-full max-w-[412px] mx-auto h-screen">
+      <div className="w-full min-h-screen">
         <AdminScreen 
           quests={quests}
           setQuests={setQuests}
@@ -715,14 +768,14 @@ released to explore.`);
 
   // Show public app
   return (
-    <div className="w-full max-w-[412px] mx-auto h-screen bg-[#1a1a2e] relative overflow-hidden">
+    <div className="w-full min-h-screen bg-[#1a1a2e] relative overflow-hidden">
       {/* Background Effect */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a4e]/30 via-transparent to-[#1a1a2e] pointer-events-none" />
       
       {/* Main Content */}
-      <div className="relative z-10 h-full flex flex-col">
-        {/* Screen Content */}
-        <div className="flex-1 overflow-y-auto pb-20">
+      <div className="relative z-10 h-screen flex flex-col">
+        {/* Screen Content - Add padding bottom for nav bar */}
+        <div className="flex-1 overflow-y-auto pb-24 safe-bottom">{/* Added safe-bottom for notch support */}
           {activeScreen === 'quests' && (
             <QuestsScreen 
               quests={quests} 
@@ -750,34 +803,34 @@ released to explore.`);
         </div>
 
         {/* Bottom Navigation - Fixed */}
-        <nav className="fixed bottom-0 left-0 right-0 max-w-[412px] mx-auto bg-gradient-to-t from-[#16213e] via-[#16213e]/95 to-transparent backdrop-blur-lg border-t border-white/10 z-50">
-          <div className="flex items-center justify-around px-4 py-4">
+        <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#16213e] via-[#16213e]/95 to-transparent backdrop-blur-lg border-t border-white/10 z-50 safe-bottom">
+          <div className="flex items-center justify-around px-2 sm:px-4 py-3 sm:py-4">
             <NavButton
-              icon={<Scroll className="w-6 h-6" />}
+              icon={<Scroll className="w-5 h-5 sm:w-6 sm:h-6" />}
               label="Quests"
               active={activeScreen === 'quests'}
               onClick={() => setActiveScreen('quests')}
             />
             <NavButton
-              icon={<Sparkles className="w-6 h-6" />}
+              icon={<Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />}
               label="Wish"
               active={activeScreen === 'banner'}
               onClick={() => setActiveScreen('banner')}
             />
             <NavButton
-              icon={<Package className="w-6 h-6" />}
+              icon={<Package className="w-5 h-5 sm:w-6 sm:h-6" />}
               label="Inventory"
               active={activeScreen === 'objects'}
               onClick={() => setActiveScreen('objects')}
             />
             <NavButton
-              icon={<Trophy className="w-6 h-6" />}
+              icon={<Trophy className="w-5 h-5 sm:w-6 sm:h-6" />}
               label="Achievements"
               active={activeScreen === 'achievements'}
               onClick={() => setActiveScreen('achievements')}
             />
             <NavButton
-              icon={<Mail className="w-6 h-6" />}
+              icon={<Mail className="w-5 h-5 sm:w-6 sm:h-6" />}
               label="Messages"
               active={activeScreen === 'messages'}
               onClick={() => setActiveScreen('messages')}

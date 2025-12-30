@@ -38,17 +38,18 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-5 bg-gradient-to-b from-[#2a2a4e] to-[#1a1a2e]">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-5xl text-[#e6be8a] mb-3 tracking-wider" style={{ fontFamily: 'serif' }}>
-          Soulbound
-        </h1>
-        <p className="text-[#a8a8b8] text-sm">Your adventure awaits</p>
-      </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-5 bg-gradient-to-b from-[#2a2a4e] to-[#1a1a2e] overflow-y-auto">
+      <div className="w-full max-w-md my-auto py-6">
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-4xl sm:text-5xl text-[#e6be8a] mb-2 sm:mb-3 tracking-wider" style={{ fontFamily: 'serif' }}>
+            Soulbound
+          </h1>
+          <p className="text-[#a8a8b8] text-sm">Your adventure awaits</p>
+        </div>
 
-      {/* Auth Card */}
-      <div className="w-full max-w-[380px] bg-[#16213e]/80 backdrop-blur-sm rounded-3xl border border-[#e6be8a]/20 p-6">
+        {/* Auth Card */}
+        <div className="w-full bg-[#16213e]/80 backdrop-blur-sm rounded-3xl border border-[#e6be8a]/20 p-5 sm:p-6">
         {/* Mode Toggle */}
         <div className="flex gap-2 mb-6">
           <button
@@ -56,7 +57,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
               setMode('signin');
               setError('');
             }}
-            className={`flex-1 py-2.5 rounded-lg transition-all ${
+            className={`flex-1 py-2.5 rounded-lg transition-all text-sm sm:text-base ${
               mode === 'signin'
                 ? 'bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] text-white'
                 : 'bg-[#1a1a2e]/50 text-[#a8a8b8] hover:bg-[#1a1a2e]'
@@ -70,7 +71,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
               setMode('signup');
               setError('');
             }}
-            className={`flex-1 py-2.5 rounded-lg transition-all ${
+            className={`flex-1 py-2.5 rounded-lg transition-all text-sm sm:text-base ${
               mode === 'signup'
                 ? 'bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] text-white'
                 : 'bg-[#1a1a2e]/50 text-[#a8a8b8] hover:bg-[#1a1a2e]'
@@ -181,15 +182,16 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       </div>
 
       {/* Feature Highlights */}
-      <div className="mt-8 space-y-2 text-center">
-        <div className="flex items-center justify-center gap-2 text-[#a8a8b8] text-sm">
-          <Sparkles className="w-4 h-4 text-[#e6be8a]" />
+      <div className="mt-6 sm:mt-8 space-y-2 text-center pb-6">
+        <div className="flex items-center justify-center gap-2 text-[#a8a8b8] text-xs sm:text-sm">
+          <Sparkles className="w-4 h-4 text-[#e6be8a] flex-shrink-0" />
           <span>Your progress is automatically saved</span>
         </div>
-        <div className="flex items-center justify-center gap-2 text-[#a8a8b8] text-sm">
-          <Scroll className="w-4 h-4 text-[#e6be8a]" />
+        <div className="flex items-center justify-center gap-2 text-[#a8a8b8] text-xs sm:text-sm">
+          <Scroll className="w-4 h-4 text-[#e6be8a] flex-shrink-0" />
           <span>Access your adventure from any device</span>
         </div>
+      </div>
       </div>
     </div>
   );
