@@ -1,17 +1,16 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { useState, useEffect, useRef } from 'react';
-import { SkipForward, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface OpeningCutsceneProps {
   onComplete: () => void;
   prologueText?: string;
   prologueMusicUrl?: string;
+  isRewatch?: boolean;
 }
 
-export function OpeningCutscene({ onComplete, prologueText, prologueMusicUrl }: OpeningCutsceneProps) {
+export function OpeningCutscene({ onComplete, prologueText, prologueMusicUrl, isRewatch = false }: OpeningCutsceneProps) {
   const [currentPhase, setCurrentPhase] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  console.log('🎬 OpeningCutscene mounted - isRewatch:', isRewatch);
 
   // Default prologue if none provided
   const defaultPrologue = `Welcome to a Co-Op Journey Written in the Language of Stars.
@@ -24,150 +23,206 @@ but a remembrance of shared wonder.
 Let the journey begin.`;
 
   const prologue = prologueText || defaultPrologue;
-
-  // Split prologue into sections by double line breaks
   const sections = prologue.split('\n\n').filter(s => s.trim());
 
   const handleClick = () => {
     if (currentPhase < sections.length + 1) {
       setCurrentPhase(currentPhase + 1);
     } else {
-      localStorage.setItem('soulbound_seen_cutscene', 'true');
+      // Only set localStorage flag if this is the first watch, not a rewatch
+      if (!isRewatch) {
+        localStorage.setItem('soulbound_seen_cutscene', 'true');
+      }
       onComplete();
     }
   };
 
   const handleSkip = () => {
-    localStorage.setItem('soulbound_seen_cutscene', 'true');
+    // Only set localStorage flag if this is the first watch, not a rewatch
+    if (!isRewatch) {
+      localStorage.setItem('soulbound_seen_cutscene', 'true');
+    }
     onComplete();
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    if (iframeRef.current) {
-      iframeRef.current.muted = !isMuted;
-    }
-  };
-
-  useEffect(() => {
-    if (iframeRef.current) {
-      iframeRef.current.muted = isMuted;
-    }
-  }, [isMuted]);
-
   return (
     <div 
-      className="min-h-screen w-full z-[100] bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f1e] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer p-4"
       onClick={handleClick}
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        background: 'linear-gradient(to bottom, #0a0a1a, #1a1a2e, #0f0f1e)',
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        padding: '20px',
+        overflow: 'hidden'
+      }}
     >
       {/* Animated stars background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        pointerEvents: 'none'
+      }}>
         {[...Array(50)].map((_, i) => (
-          <motion.div
+          <div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
             style={{
+              position: 'absolute',
+              width: '2px',
+              height: '2px',
+              backgroundColor: 'white',
+              borderRadius: '50%',
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1, 0],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 5,
+              opacity: Math.random() * 0.8 + 0.2,
+              animation: `twinkle ${3 + Math.random() * 2}s infinite`
             }}
           />
         ))}
       </div>
 
       {/* Skip button */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+      <button
         onClick={(e) => {
           e.stopPropagation();
           handleSkip();
         }}
-        className="absolute top-4 right-4 sm:top-8 sm:right-8 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50"
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          padding: '8px 16px',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '20px',
+          color: 'rgba(255, 255, 255, 0.8)',
+          fontSize: '14px',
+          cursor: 'pointer',
+          backdropFilter: 'blur(10px)'
+        }}
       >
-        <span className="text-white/80 text-xs sm:text-sm">Skip</span>
-        <SkipForward className="w-4 h-4 text-white/80" />
-      </motion.button>
+        Skip
+      </button>
 
       {/* Tap to continue hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="absolute bottom-4 sm:bottom-8 left-0 right-0 text-center text-white/50 text-xs sm:text-sm pointer-events-none"
-      >
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        color: 'rgba(255, 255, 255, 0.5)',
+        fontSize: '14px',
+        pointerEvents: 'none'
+      }}>
         Tap to continue
-      </motion.div>
+      </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-2xl px-4 sm:px-8 text-center space-y-6 sm:space-y-8">
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        maxWidth: '600px',
+        textAlign: 'center',
+        color: 'white'
+      }}>
         {/* Title - always shows first */}
-        <AnimatePresence mode="wait">
-          {currentPhase >= 0 && (
-            <motion.div
-              key="title"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 1 }}
-            >
-              <h1 className="text-[#e6be8a] text-4xl sm:text-5xl tracking-wider mb-2" style={{ fontFamily: 'serif' }}>
-                Soulbound
-              </h1>
-              <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-[#e6be8a] to-transparent mx-auto" />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {currentPhase >= 0 && (
+          <div style={{ marginBottom: '40px' }}>
+            <h1 style={{
+              color: '#e6be8a',
+              fontSize: '48px',
+              fontFamily: 'serif',
+              letterSpacing: '4px',
+              marginBottom: '10px',
+              textShadow: '0 0 20px rgba(230, 190, 138, 0.5)'
+            }}>
+              Soulbound
+            </h1>
+            <div style={{
+              width: '120px',
+              height: '1px',
+              background: 'linear-gradient(to right, transparent, #e6be8a, transparent)',
+              margin: '0 auto'
+            }} />
+          </div>
+        )}
 
         {/* Prologue sections */}
-        <div className="min-h-[200px] sm:min-h-[300px] flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            {sections.map((section, index) => (
-              currentPhase === index + 1 && (
-                <motion.p
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.8 }}
-                  className={`text-[#e8e8e8] text-sm sm:text-base leading-relaxed whitespace-pre-wrap ${
-                    section.includes('Let the journey begin') || section.includes('remembrance') 
-                      ? 'italic text-base sm:text-lg' 
-                      : ''
-                  }`}
-                >
-                  {section}
-                </motion.p>
-              )
-            ))}
-          </AnimatePresence>
+        <div style={{
+          minHeight: '200px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {sections.map((section, index) => (
+            currentPhase === index + 1 && (
+              <p
+                key={index}
+                style={{
+                  color: '#e8e8e8',
+                  fontSize: '16px',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  fontStyle: section.includes('Let the journey begin') || section.includes('remembrance') ? 'italic' : 'normal',
+                  opacity: 1,
+                  animation: 'fadeIn 0.8s ease-in-out'
+                }}
+              >
+                {section}
+              </p>
+            )
+          ))}
         </div>
       </div>
 
       {/* Music player */}
       {prologueMusicUrl && (
-        <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 z-50">
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          padding: '8px 12px',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '20px',
+          backdropFilter: 'blur(10px)'
+        }}>
           <iframe
-            ref={iframeRef}
             src={prologueMusicUrl}
             width="0"
             height="0"
             style={{ display: 'none' }}
             allow="autoplay"
           />
-          <button onClick={toggleMute}>
-            {isMuted ? <VolumeX className="w-4 h-4 text-white/80" /> : <Volume2 className="w-4 h-4 text-white/80" />}
-          </button>
+          <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>♪</span>
         </div>
       )}
+
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

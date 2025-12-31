@@ -1,5 +1,6 @@
 import { Scroll, MapPin, Star, RotateCcw, ArrowLeft, TrendingUp, X, Sparkles, Coins, Sword, Target, Circle, CheckCircle2, Flag, BookOpen, Gift, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface QuestTask {
   id: number;
@@ -45,6 +46,12 @@ export function QuestsScreen({
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('📋 QuestsScreen received quests:', quests.length, 'total');
+    console.log('📋 Quest titles:', quests.map(q => q.title));
+  }, [quests]);
 
   const activeQuests = Array.isArray(quests) ? quests.filter(q => !q.completed) : [];
   const completedQuests = Array.isArray(quests) ? quests.filter(q => q.completed) : [];
@@ -207,14 +214,15 @@ export function QuestsScreen({
       )}
 
       {/* Quest Detail Modal */}
-      {selectedQuest && (
+      {selectedQuest && createPortal(
         <QuestDetail 
           quest={selectedQuest} 
           onClose={handleCloseDetail}
           onTaskToggle={handleTaskToggle}
           isTracking={isTracking}
           onTrackQuest={handleTrackQuest}
-        />
+        />,
+        document.body
       )}
 
       {/* Epilogue */}
@@ -384,10 +392,10 @@ function QuestDetail({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in pb-20">
-      <div className="w-full max-w-[412px] bg-[#16213e] rounded-t-3xl border-t border-white/10 max-h-[calc(85vh-5rem)] overflow-y-auto animate-in slide-in-from-bottom">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in p-4">
+      <div className="w-full max-w-[480px] bg-[#16213e] rounded-3xl border border-white/10 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom overflow-hidden modal-scrollbar">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-b from-[#16213e] to-[#16213e]/95 backdrop-blur-sm p-5 border-b border-white/10 z-10">
+        <div className="sticky top-0 bg-gradient-to-b from-[#16213e] to-[#16213e]/95 backdrop-blur-sm p-5 border-b border-white/10 z-10 rounded-t-3xl">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -416,7 +424,7 @@ function QuestDetail({
             </div>
             <button 
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-[#1a1a2e]/80 flex items-center justify-center hover:bg-[#1a1a2e] transition-colors"
+              className="w-8 h-8 rounded-full bg-[#1a1a2e]/80 flex items-center justify-center hover:bg-[#1a1a2e] transition-colors z-10"
             >
               <X className="w-5 h-5 text-[#e8e8e8]" />
             </button>
@@ -437,7 +445,7 @@ function QuestDetail({
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-6 pb-24">
+        <div className="p-5 space-y-6 pb-24 rounded-b-3xl">
           {/* Description */}
           <div>
             <h3 className="text-[#e8e8e8] mb-2 flex items-center gap-2">

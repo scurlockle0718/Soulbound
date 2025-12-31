@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Scroll, Sparkles, Package, Trophy, ArrowLeft, Mail, LogOut } from 'lucide-react';
 import { QuestsScreen } from './components/QuestsScreen';
 import { BannerScreen } from './components/BannerScreen';
@@ -555,17 +556,41 @@ released to explore.`);
   };
 
   const handleQuestUnlocked = (newQuest: Quest) => {
+    console.log('🎯 Adding new quest from wish:', newQuest.title);
     setQuests(prevQuests => {
-      // Check if quest already exists
-      const exists = prevQuests.some(q => q.id === newQuest.id);
+      // Generate a unique ID to avoid conflicts
+      const maxId = Math.max(...prevQuests.map(q => q.id), 0);
+      const uniqueQuest = { ...newQuest, id: maxId + 1 };
+      
+      // Check if quest with same title already exists
+      const exists = prevQuests.some(q => q.title === uniqueQuest.title);
       if (exists) {
+        console.log('⚠️ Quest with same title already exists, skipping:', uniqueQuest.title);
         return prevQuests;
       }
-      return [...prevQuests, newQuest];
+      
+      console.log('✅ Quest added to local state with ID:', uniqueQuest.id, uniqueQuest.title);
+      const updatedQuests = [...prevQuests, uniqueQuest];
+      
+      // Force immediate save to backend (don't wait for auto-save)
+      api.saveUserProgress({
+        quests: updatedQuests,
+        inventory,
+        currencies: { mora, primogems, adventureExp },
+        messages,
+        flags: { prologueWatched }
+      }).then(() => {
+        console.log('💾 Quest immediately saved to backend');
+      }).catch(error => {
+        console.error('❌ Failed to immediately save quest:', error);
+      });
+      
+      return updatedQuests;
     });
   };
 
   const handleCloseWishResult = () => {
+    console.log('🔄 Closing wish result, switching to quests screen');
     setShowWishResult(false);
     setActiveScreen('quests');
   };
@@ -793,12 +818,18 @@ released to explore.`);
           {activeScreen === 'banner' && <BannerScreen onWish={handleWish} primogems={primogems} />}
           {activeScreen === 'objects' && <ObjectsScreen items={inventory} />}
           {activeScreen === 'achievements' && (
-            <AchievementsScreen 
-              quests={quests} 
-              onRewatchEpilogue={() => setShowEpilogue(true)} 
-              onRewatchPrologue={prologueWatched ? () => setShowPrologue(true) : undefined}
-              username={api.getCurrentUser()?.username}
-            />
+            <>
+              {console.log('🎬 AchievementsScreen render - prologueWatched:', prologueWatched, 'showPrologue:', showPrologue)}
+              <AchievementsScreen 
+                quests={quests} 
+                onRewatchEpilogue={() => setShowEpilogue(true)} 
+                onRewatchPrologue={prologueWatched ? () => {
+                  console.log('🎬 Rewatch prologue clicked, prologueWatched:', prologueWatched);
+                  setShowPrologue(true);
+                } : undefined}
+                username={api.getCurrentUser()?.username}
+              />
+            </>
           )}
           {activeScreen === 'messages' && <MessagesScreen messages={messages} setMessages={setMessages} onBack={() => setActiveScreen('quests')} />}
         </div>
@@ -860,12 +891,21 @@ released to explore.`);
       )}
 
       {/* Prologue Screen */}
-      {showPrologue && (
-        <OpeningCutscene
-          onComplete={() => setShowPrologue(false)}
-          prologueText={prologueText}
-          prologueMusicUrl={prologueMusicUrl}
-        />
+      {console.log('🎬 Prologue modal check - showPrologue:', showPrologue)}
+      {showPrologue && createPortal(
+        <>
+          {console.log('🎬 Rendering OpeningCutscene component via portal')}
+          <OpeningCutscene
+            onComplete={() => {
+              console.log('🎬 Prologue completed, closing modal');
+              setShowPrologue(false);
+            }}
+            prologueText={prologueText}
+            prologueMusicUrl={prologueMusicUrl}
+            isRewatch={true}
+          />
+        </>,
+        document.body
       )}
     </div>
   );
